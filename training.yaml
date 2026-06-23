@@ -1,0 +1,54 @@
+# Training configuration
+GPU: [0]
+
+VERBOSE: False
+
+SWINUNET:
+  IMG_SIZE: 128
+  PATCH_SIZE: 4
+  WIN_SIZE: 8
+  EMB_DIM: 96
+  DEPTH_EN: [4, 4, 4, 4]
+  HEAD_NUM: [4, 4, 4, 4]
+  MLP_RATIO: 4.0
+  QKV_BIAS: True
+  QK_SCALE: 8
+  DROP_RATE: 0.
+  ATTN_DROP_RATE: 0.
+  DROP_PATH_RATE: 0.1
+  APE: False
+  PATCH_NORM: True
+  USE_CHECKPOINTS: False
+  FINAL_UPSAMPLE: 'Dual up-sample'
+
+MODEL:
+  MODE: 'Denoising'
+
+# 🔧 Loss function configuration
+LOSS:
+  TYPE: 'L1+SSIM'        # Combines L1 loss with SSIM loss
+  SSIM_WEIGHT: 0.15      # Weight for SSIM loss component
+
+# Optimization arguments.
+OPT:
+  BATCH: 1
+  EPOCHS: 20
+  # EPOCH_DECAY: [10]
+  LR_INITIAL: 2e-4
+  LR_MIN: 1e-6
+  # BETA1: 0.9
+
+TRAINING:
+  VAL_AFTER_EVERY: 1
+  RESUME: True
+  TRAIN_PS: 128
+  VAL_PS: 128
+  TEST_PS: 128
+  TRAIN_DIR: E:\Hamnah\PHD\hamnah\Dataset\train
+  VAL_DIR: E:\Hamnah\PHD\hamnah\Dataset\val
+  TEST_DIR: E:\Hamnah\PHD\hamnah\Dataset\test
+  SAVE_DIR: E:\Hamnah\PHD\hamnah\SaveModel_images_T2\Denoising
+
+TESTING:
+  MODEL_PATH: E:\Hamnah\PHD\hamnah\SaveModel_images_T2\Denoising\models\model_bestSSIM.pth
+  TEST_DIR: E:\Hamnah\PHD\hamnah\Dataset\test
