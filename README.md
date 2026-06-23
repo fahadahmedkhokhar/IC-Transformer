@@ -33,7 +33,29 @@ If PyTorch installation fails, install the correct CUDA build for your system fr
 
 ## Dataset Format
 
-Each split should contain paired images in `input` and `target` folders:
+For BraTS-style NIfTI data, set `DATASET.FORMAT: brats_nifti` in `training.yaml`.
+Each split directory should contain one folder per case. Each case folder should include
+the input modalities and target modality:
+
+```text
+Training/
+  BraTS-PED-00001-000/
+    BraTS-PED-00001-000-t1n.nii.gz   # input channel 1: T1
+    BraTS-PED-00001-000-t2w.nii.gz   # input channel 2: T2
+    BraTS-PED-00001-000-t2f.nii.gz   # input channel 3: FLAIR
+    BraTS-PED-00001-000-t1c.nii.gz   # target: T1CE
+    BraTS-PED-00001-000-seg.nii.gz   # ignored
+```
+
+The NIfTI loader trains on 2D slices. By default it uses axial slices
+(`SLICE_AXIS: 2`), normalizes each modality to `[0, 1]`, stacks
+`t1n/t2w/t2f` as a 3-channel input, and uses `t1c` as a 1-channel ground truth.
+If `TRAIN_DIR`, `VAL_DIR`, and `TEST_DIR` point to the same folder, patient case
+folders are split deterministically using `TRAIN_RATIO`, `VAL_RATIO`,
+`TEST_RATIO`, and `SPLIT_SEED` from `training.yaml`.
+
+The older RGB image format is still supported. Each split should contain paired
+images in `input` and `target` folders:
 
 ```text
 Dataset/

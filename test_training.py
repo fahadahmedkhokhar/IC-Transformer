@@ -12,6 +12,7 @@ with open('./training.yaml', 'r') as f:
     config = yaml.safe_load(f)
 
 Train = config['TRAINING']
+DatasetOpt = config.get('DATASET', {})
 
 # Setup device
 device_ids = [torch.cuda.current_device()]
@@ -19,7 +20,10 @@ model_restored = SUNet_model(config)
 model_restored = torch.nn.DataParallel(model_restored.cuda(), device_ids=device_ids)
 
 # Load training data
-train_loader = get_training_data(Train['TRAIN_DIR'], Train['BATCH'], Train['TRAIN_PS'], num_workers=4)
+train_options = dict(DatasetOpt)
+train_options['patch_size'] = Train['TRAIN_PS']
+train_dataset = get_training_data(Train['TRAIN_DIR'], train_options)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=config['OPT']['BATCH'], shuffle=True, num_workers=0)
 
 # Test first 10 batches
 L1_loss = torch.nn.L1Loss()
@@ -30,8 +34,8 @@ try:
         if i >= 10:
             break
         
-        target = data[0].cuda()  # Ground truth (RGB image)
-        input_ = data[1].cuda()  # Input image (RGB image)
+        target = data[0].cuda()
+        input_ = data[1].cuda()
         
         # Forward pass through model
         restored = model_restored(input_)

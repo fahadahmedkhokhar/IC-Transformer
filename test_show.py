@@ -14,7 +14,8 @@ with open('training.yaml', 'r') as config_file:
     opt = yaml.safe_load(config_file)
 
 Train = opt['TRAINING']
-OPT = opt['OPTIM']
+OPT = opt.get('OPT', opt.get('OPTIM', {}))
+DatasetOpt = opt.get('DATASET', {})
 mode = opt['MODEL']['MODE']
 
 # GPU setup
@@ -38,7 +39,9 @@ model.eval()
 
 # Load validation data
 val_dir = Train['TRAIN_DIR']
-val_dataset = get_validation_data(val_dir, {'patch_size': Train['TEST_PS']})
+val_options = dict(DatasetOpt)
+val_options['patch_size'] = Train['TEST_PS']
+val_dataset = get_validation_data(val_dir, val_options)
 val_loader = DataLoader(dataset=val_dataset, batch_size=1, shuffle=False, num_workers=0, drop_last=False)
 
 # Create results directory
@@ -69,10 +72,16 @@ with torch.no_grad():
 
             if input_np.shape[0] == 3:
                 input_np = np.transpose(input_np, (1, 2, 0))
+            elif input_np.shape[0] == 1:
+                input_np = input_np[0]
             if target_np.shape[0] == 3:
                 target_np = np.transpose(target_np, (1, 2, 0))
+            elif target_np.shape[0] == 1:
+                target_np = target_np[0]
             if output_np.shape[0] == 3:
                 output_np = np.transpose(output_np, (1, 2, 0))
+            elif output_np.shape[0] == 1:
+                output_np = output_np[0]
 
             input_img = (input_np * 255).astype(np.uint8)
             target_img = (target_np * 255).astype(np.uint8)

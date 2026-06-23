@@ -13,6 +13,7 @@ with open('training.yaml', 'r') as config_file:
 Train = opt['TRAINING']
 OPT = opt.get('OPT', opt.get('OPTIM', {}))
 Testing = opt.get('TESTING', {})
+DatasetOpt = opt.get('DATASET', {})
 mode = opt['MODEL']['MODE']
 
 # GPU setup
@@ -39,7 +40,10 @@ model.eval()
 
 # Load test data with paired targets for metric calculation
 test_dir = Testing.get('TEST_DIR', Train.get('TEST_DIR'))
-test_dataset = get_validation_data(test_dir, {'patch_size': Train['TEST_PS']})
+test_options = dict(DatasetOpt)
+test_options['patch_size'] = Train['TEST_PS']
+test_options['split'] = 'test'
+test_dataset = get_validation_data(test_dir, test_options)
 test_loader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False, num_workers=0, drop_last=False)
 print(f"Testing images: {len(test_dataset)}")
 

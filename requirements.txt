@@ -1,5 +1,6 @@
 einops==0.8.0
 natsort==8.4.0
+nibabel==5.3.2
 numpy==1.23.5
 opencv_python==4.10.0.84
 Pillow==11.1.0

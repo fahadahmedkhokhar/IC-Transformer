@@ -16,9 +16,6 @@ from data_RGB import get_training_data, get_validation_data
 from warmup_scheduler import GradualWarmupScheduler
 from model.SUNet import SUNet_model
 
-# Note: The POCS-based reconstruction approach was replaced with simpler direct model inference
-# since the actual dataset is RGB images, not k-space MRI data.
-
 # ----------------Seeds ------------------
 torch.backends.cudnn.benchmark = True
 random.seed(1234)
@@ -31,6 +28,7 @@ with open('training.yaml', 'r') as config:
     opt = yaml.safe_load(config)
 Train = opt['TRAINING']
 OPT = opt['OPT']
+DatasetOpt = opt.get('DATASET', {})
 
 # ------------------ Build Model ------------------
 print('==> Build the model')
@@ -81,9 +79,13 @@ L1_loss = nn.L1Loss()
 
 # ------------------ Data Loaders ------------------
 print('==> Loading datasets')
-train_dataset = get_training_data(train_dir, {'patch_size': Train['TRAIN_PS']})
+train_options = dict(DatasetOpt)
+train_options['patch_size'] = Train['TRAIN_PS']
+val_options = dict(DatasetOpt)
+val_options['patch_size'] = Train['VAL_PS']
+train_dataset = get_training_data(train_dir, train_options)
 train_loader = DataLoader(dataset=train_dataset, batch_size=OPT['BATCH'], shuffle=True, num_workers=0, drop_last=False)
-val_dataset = get_validation_data(val_dir, {'patch_size': Train['VAL_PS']})
+val_dataset = get_validation_data(val_dir, val_options)
 val_loader = DataLoader(dataset=val_dataset, batch_size=1, shuffle=False, num_workers=0, drop_last=False)
 
 print(f'Training details:\nModel parameters: {p_number}\nStart/End epochs: {start_epoch}~{OPT["EPOCHS"]}')
@@ -101,11 +103,9 @@ for epoch in range(start_epoch, OPT['EPOCHS'] + 1):
     model_restored.train()
 
     for i, data in enumerate(tqdm(train_loader), 0):
-        target = data[0].cuda()  # Ground truth (RGB image, shape: [B, 3, H, W])
-        input_ = data[1].cuda()  # Input image (RGB image, shape: [B, 3, H, W])
+        target = data[0].cuda()  # Ground truth T1CE, shape: [B, 1, H, W]
+        input_ = data[1].cuda()  # Input T1/T2/FLAIR, shape: [B, 3, H, W]
 
-        # Model expects input of shape [B, 3, H, W]
-        # Forward pass through the model
         restored = model_restored(input_)
         loss = L1_loss(restored, target)
 
