@@ -114,6 +114,14 @@ for epoch in range(start_epoch, OPT['EPOCHS'] + 1):
         optimizer.step()
         epoch_loss += loss.item()
 
+        if epoch == start_epoch and i == 0:
+            print(
+                "First batch ranges | "
+                f"input: [{input_.min().item():.4f}, {input_.max().item():.4f}] | "
+                f"target: [{target.min().item():.4f}, {target.max().item():.4f}] | "
+                f"output: [{restored.min().item():.4f}, {restored.max().item():.4f}]"
+            )
+
     if epoch % Train['VAL_AFTER_EVERY'] == 0:
         model_restored.eval()
         psnr_val_rgb = []
@@ -126,8 +134,8 @@ for epoch in range(start_epoch, OPT['EPOCHS'] + 1):
                 restored = model_restored(input_)
 
             for res, tar in zip(restored, target):
-                psnr_val_rgb.append(utils.torchPSNR(res, tar))
-                ssim_val_rgb.append(utils.torchSSIM(res.unsqueeze(0), tar.unsqueeze(0)))
+                psnr_val_rgb.append(utils.torchPSNR(tar, res))
+                ssim_val_rgb.append(utils.torchSSIM(tar.unsqueeze(0), res.unsqueeze(0)))
 
         psnr_val_rgb = torch.stack(psnr_val_rgb).mean().item()
         ssim_val_rgb = torch.stack(ssim_val_rgb).mean().item()
@@ -146,10 +154,16 @@ for epoch in range(start_epoch, OPT['EPOCHS'] + 1):
         writer.add_scalar('val/SSIM', ssim_val_rgb, epoch)
 
     scheduler.step()
-    print("Epoch: {}	Time: {:.2f}s	Loss: {:.4f}".format(epoch, time.time() - epoch_start_time, epoch_loss))
+    avg_epoch_loss = epoch_loss / max(len(train_loader), 1)
+    print(
+        "Epoch: {}\tTime: {:.2f}s\tAvg Loss: {:.6f}\tTotal Loss: {:.4f}".format(
+            epoch, time.time() - epoch_start_time, avg_epoch_loss, epoch_loss
+        )
+    )
 
     torch.save({'epoch': epoch, 'state_dict': model_restored.state_dict(), 'optimizer': optimizer.state_dict()}, os.path.join(model_dir, "model_latest.pth"))
-    writer.add_scalar('train/loss', epoch_loss, epoch)
+    writer.add_scalar('train/loss', avg_epoch_loss, epoch)
+    writer.add_scalar('train/total_loss', epoch_loss, epoch)
     writer.add_scalar('train/lr', scheduler.get_lr()[0], epoch)
 
 writer.close()

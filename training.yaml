@@ -67,3 +67,5 @@ TRAINING:
 TESTING:
   MODEL_PATH: /media/cheema/aefeca2e-d141-40f6-beb3-cbc443e70045/cheema/BraTS-PEDs-v1/IC-Transformer-checkpoints/Denoising/models/model_bestSSIM.pth
   TEST_DIR: /media/cheema/aefeca2e-d141-40f6-beb3-cbc443e70045/cheema/BraTS-PEDs-v1/Training
+  RESULT_DIR: /media/cheema/aefeca2e-d141-40f6-beb3-cbc443e70045/cheema/BraTS-PEDs-v1/IC-Transformer-checkpoints/Denoising/test_visuals
+  MAX_VISUALS: 50

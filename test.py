@@ -58,8 +58,8 @@ with torch.no_grad():
         input_ = data_val[1].cuda()
         output = model(input_)
         for res, tar in zip(output, target):
-            psnr_vals.append(utils.torchPSNR(res, tar))
-            ssim_vals.append(utils.torchSSIM(res.unsqueeze(0), tar.unsqueeze(0)))
+            psnr_vals.append(utils.torchPSNR(tar, res))
+            ssim_vals.append(utils.torchSSIM(tar.unsqueeze(0), res.unsqueeze(0)))
 
 # Compute averages and uncertainty estimates
 psnr_tensor = torch.stack(psnr_vals)
