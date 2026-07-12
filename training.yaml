@@ -24,7 +24,7 @@ SWINUNET:
 MODEL:
   MODE: 'Denoising'
 
-# 🔧 Loss function configuration
+# Loss function configuration
 LOSS:
   TYPE: 'L1+SSIM'        # Combines L1 loss with SSIM loss
   SSIM_WEIGHT: 0.15      # Weight for SSIM loss component
@@ -52,3 +52,8 @@ TRAINING:
 TESTING:
   MODEL_PATH: E:\Hamnah\PHD\hamnah\SaveModel_images_T2\Denoising\models\model_bestSSIM.pth
   TEST_DIR: E:\Hamnah\PHD\hamnah\Dataset\test
+POCS:
+  ENABLE: true
+  ITERATIONS: 1
+  ACCELERATION: 2
+
